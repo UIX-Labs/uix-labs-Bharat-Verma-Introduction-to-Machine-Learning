@@ -1,3 +1,4 @@
+print('Hello, world!')
 L = int(input())
 N = int(input())
 

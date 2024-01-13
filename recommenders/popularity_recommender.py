@@ -1,31 +1,36 @@
+print('Hello, world!')
 from recommenders import data_movies, data_ratings, default_poster_url
 import pandas as pd
 
-
 def recommend_popular_movies():
-
     ######################################################################################################
-    movie_ratings = None
-    '''
-    complete the code to compute a variable movie_ratings
-    1. perform a merge between data_movies and data_ratings on 'movieId'.
-    2. group by title and find the mean of ratings and fetch top 20 records.
-    3. convert the records to dict.
-    '''
+    # Merge movie data and rating data based on 'movieId'
+    movie_ratings = pd.merge(data_movies, data_ratings, on='movieId')
 
+    # Calculate average ratings for each movie
+    movie_ratings = movie_ratings.groupby('title')['rating'].mean().reset_index()
+
+    # Sorting movies based on mean ratings in descending order
+    movie_ratings = movie_ratings.sort_values(by='rating', ascending=False)
+
+    # Select the top 20 movies
+    top_movies = movie_ratings.head(20)
+
+    # Convert the resulting DataFrame to a dictionary
+    movie_ratings_dict = top_movies.set_index('title')['rating'].to_dict()
     #######################################################################################################
+
     response = []
 
-    for movie in movie_ratings:
+    for movie, rating in movie_ratings_dict.items():
         movie_record = data_movies[data_movies.title == movie].iloc[0]
-        movie_poster = None
+        movie_poster = None  # You need to fetch the movie poster URL, not provided in the code
         response.append({
             "movieId": int(movie_record.movieId),
             "title": str(movie),
-            "image": movie_poster if movie_poster != "nan" or movie_poster else default_poster_url,
+            "image": movie_poster if movie_poster and movie_poster != "nan" else default_poster_url,
             "genres": str(movie_record.genres).split("|"),
-            "average_rating": movie_ratings[movie]
+            "average_rating": rating
         })
 
-
-    return {"status": True, "data": {"message": "Here are some of the popular recommendations.", "results" : response}}
+    return {"status": True, "data": {"message": "Here are some of the popular recommendations.", "results": response}}
